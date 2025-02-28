@@ -1,0 +1,23 @@
+C:\repo\Code Tracker\bin\Debug\net8.0\Code Tracker.exe
+C:\repo\Code Tracker\bin\Debug\net8.0\Code Tracker.deps.json
+C:\repo\Code Tracker\bin\Debug\net8.0\Code Tracker.runtimeconfig.json
+C:\repo\Code Tracker\bin\Debug\net8.0\Code Tracker.dll
+C:\repo\Code Tracker\bin\Debug\net8.0\Code Tracker.pdb
+C:\repo\Code Tracker\bin\Debug\net8.0\System.Configuration.ConfigurationManager.dll
+C:\repo\Code Tracker\bin\Debug\net8.0\System.Diagnostics.EventLog.dll
+C:\repo\Code Tracker\bin\Debug\net8.0\System.Security.Cryptography.ProtectedData.dll
+C:\repo\Code Tracker\bin\Debug\net8.0\runtimes\win\lib\net8.0\System.Diagnostics.EventLog.Messages.dll
+C:\repo\Code Tracker\bin\Debug\net8.0\runtimes\win\lib\net8.0\System.Diagnostics.EventLog.dll
+C:\repo\Code Tracker\obj\Debug\net8.0\Code Tracker.csproj.AssemblyReference.cache
+C:\repo\Code Tracker\obj\Debug\net8.0\Code Tracker.GeneratedMSBuildEditorConfig.editorconfig
+C:\repo\Code Tracker\obj\Debug\net8.0\Code Tracker.AssemblyInfoInputs.cache
+C:\repo\Code Tracker\obj\Debug\net8.0\Code Tracker.AssemblyInfo.cs
+C:\repo\Code Tracker\obj\Debug\net8.0\Code Tracker.csproj.CoreCompileInputs.cache
+C:\repo\Code Tracker\obj\Debug\net8.0\Code Tracker.sourcelink.json
+C:\repo\Code Tracker\obj\Debug\net8.0\Code Tra.A255F165.Up2Date
+C:\repo\Code Tracker\obj\Debug\net8.0\Code Tracker.dll
+C:\repo\Code Tracker\obj\Debug\net8.0\refint\Code Tracker.dll
+C:\repo\Code Tracker\obj\Debug\net8.0\Code Tracker.pdb
+C:\repo\Code Tracker\obj\Debug\net8.0\Code Tracker.genruntimeconfig.cache
+C:\repo\Code Tracker\obj\Debug\net8.0\ref\Code Tracker.dll
+C:\repo\Code Tracker\bin\Debug\net8.0\Code Tracker.dll.config

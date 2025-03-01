@@ -11,7 +11,7 @@ namespace Code_Tracker
         // Main Menu
         public void ShowMainMenu()
         {
-            Console.Clear();
+            AnsiConsole.Clear();
 
             while (!closeApp){
 
@@ -39,7 +39,7 @@ namespace Code_Tracker
                         controller.GetAllSessions();
                         break;
                     case "Exit":
-                        Console.Clear();
+                        AnsiConsole.Clear();
                         var panel = new Panel("Goodbye...")
                             .Header(new PanelHeader("Notice"))
                             .Border(BoxBorder.Double)
@@ -48,9 +48,9 @@ namespace Code_Tracker
                         closeApp = true;
                         break;
                     default:
-                        Console.Clear();
-                            Console.WriteLine("Invalid input");
-                            Console.ReadKey();
+                        AnsiConsole.Clear();
+                            AnsiConsole.WriteLine("Invalid input");
+                            AnsiConsole.Record();
                             break;
                     }
                 };

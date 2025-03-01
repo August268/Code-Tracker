@@ -12,7 +12,7 @@ namespace Code_Tracker
         readonly string connectionString = ConfigurationManager.AppSettings.Get("ConnectionString");
         public void GetAllSessions()
         {
-            Console.Clear();
+            AnsiConsole.Clear();
 
             using (var connection = new SqliteConnection(connectionString))
             {
@@ -57,8 +57,18 @@ namespace Code_Tracker
 
         public void CreateSession()
         {
-            var rule = new Rule("CREATING A SESSION...").Border(BoxBorder.Double);
-            AnsiConsole.Write(rule + "\n");
+            AnsiConsole.Clear();
+
+            var header = new Panel(
+                    Align.Center(
+                        new Markup("[blue]CREATING SESSION[/]"),
+                        VerticalAlignment.Middle
+                    )
+                ).Border(BoxBorder.Heavy).BorderStyle(Color.Blue);
+
+            AnsiConsole.Write(header);
+            AnsiConsole.WriteLine();
+
 
             string StartTime = GetUserInput("Start Time (Format: dd-MM-yyyy HH-mm-ss)", "Please enter start date and time: ");
 
@@ -76,8 +86,9 @@ namespace Code_Tracker
         // Templates
         private string GetUserInput(string header, string prompt)
         {
-            var rule = new Rule(prompt).Border(BoxBorder.Rounded).LeftJustified();
-            AnsiConsole.Write(rule);
+            var inputRule = new Rule(header).Border(BoxBorder.Rounded).LeftJustified();
+            AnsiConsole.Write(inputRule);
+            AnsiConsole.WriteLine();
             string input = AnsiConsole.Ask<string>($"{prompt}: ");
 
             return input;
@@ -87,8 +98,8 @@ namespace Code_Tracker
             var rule = new Rule().Border(BoxBorder.Double);
             AnsiConsole.Write(rule);
             AnsiConsole.Write("Press any key to continue.");
-            Console.ReadKey();
-            Console.Clear();
+            AnsiConsole.Record();
+            AnsiConsole.Clear();
         }
     }
 }

@@ -1,4 +1,6 @@
-#ignore bin folder
+#ignore folders
 bin/
 obj/
+
+#ignore files
 habit-Tracker.db

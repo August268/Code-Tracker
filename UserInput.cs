@@ -29,7 +29,7 @@ namespace Code_Tracker
                 switch (selectedOption)
                 {
                     case "Add Session":
-                        controller.CreateSession();
+                        // controller.CreateSession();
                         break;
                     case "Delete Session":
                         break;

@@ -1,33 +1,31 @@
 ﻿using System.Configuration;
 using Code_Tracker;
-using Microsoft.Data.Sqlite;
+using System.Data.SQLite;
+using Dapper;
+using System.Data;
 using Spectre.Console;
 
 // Geting connection string from App.config
-string connectionString = ConfigurationManager.AppSettings.Get("ConnectionString");
+string _connectionString = ConfigurationManager.AppSettings.Get("ConnectionString");
 
 UserInput input = new UserInput();
 
-// Create database and coding sessions table if not exist
-using (var connection = new SqliteConnection(connectionString))
+// Connect to database (Create one if it doesn't exist) using Dapper
+using (IDbConnection connection = new SQLiteConnection(_connectionString))
 {
     connection.Open();
 
-    var tableCmd = connection.CreateCommand();
-
-    tableCmd.CommandText =
-        @"CREATE TABLE IF NOT EXISTS coding_sessions (
+    // Define the SQL to create a table if it doesn't exists
+    string createTableSql = @"
+        CREATE TABLE IF NOT EXISTS CodingSessions (
             Id INTEGER PRIMARY KEY AUTOINCREMENT,
-            StartTime TEXT,
-            EndTime TEXT,
-            Duration REAL
-            )";
+            StartTime TEXT NOT NULL,
+            EndTime TEXT NOT NULL,
+            Duration REAL)";
 
-    tableCmd.ExecuteNonQuery();
+    // Execute the SQL to create the table
+    connection.Execute(createTableSql);
 
-    connection.Close();
 }
 
 input.ShowMainMenu();
-
-

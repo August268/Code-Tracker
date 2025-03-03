@@ -1,92 +1,79 @@
 using System.Configuration;
 using System.Collections.Specialized;
 using Spectre.Console;
-using Microsoft.Data.Sqlite;
+using System.Data.SQLite;
 using System.Globalization;
+using System.Data;
+using Dapper;
 
 
 namespace Code_Tracker
 {
     public class CodingSessionController
     {
-        readonly string connectionString = ConfigurationManager.AppSettings.Get("ConnectionString");
+        readonly string _connectionString = ConfigurationManager.AppSettings.Get("ConnectionString");
         public void GetAllSessions()
         {
             AnsiConsole.Clear();
 
-            using (var connection = new SqliteConnection(connectionString))
+            using (IDbConnection connection = new SQLiteConnection(_connectionString))
             {
                 connection.Open();
 
-                var tableCmd = connection.CreateCommand();
+                string query = "SELECT * FROM CodingSessions";
 
-                tableCmd.CommandText = @"SELECT * FROM coding_sessions";
-
-                List<CodingSession> tableData = [];
-
-                SqliteDataReader reader = tableCmd.ExecuteReader();
-
-                if (reader.HasRows)
-                {
-                    while (reader.Read())
-                    {
-                        tableData.Add(
-                            new CodingSession
-                            {
-                                Id = reader.GetInt32(0),
-                                StartTime = DateTime.ParseExact(reader.GetString(1), "dd-MM-yyyy HH-mm-ss", new CultureInfo("en-US")),
-                                EndTime = DateTime.ParseExact(reader.GetString(2), "dd-MM-yyyy HH-mm-ss", new CultureInfo("en-US")),
-                                Duration = reader.GetFloat(3),
-                            }
-                        );
-                    }
-                } else
-                {
-                    Console.WriteLine("No rows found");
-                }
+                var sessionData = connection.Query<CodingSession>(query);
 
                 connection.Close();
 
-                foreach (var sessions in tableData)
+                if (sessionData.Count() == 0)
                 {
-                    Console.WriteLine($"{sessions.Id} - Start: {sessions.StartTime} - End: {sessions.EndTime} - Duration: {sessions.Duration}");
+                    AnsiConsole.WriteLine("No sessions are found...");
                 }
-                AnyKeyPrompt();
+                else
+                {
+                    foreach (var sessions in sessionData)
+                    {
+                        Console.WriteLine($"{sessions.Id} - Start: {sessions.StartTime} - End: {sessions.EndTime} - Duration: {sessions.Duration}");
+                    }
+                }
             }
+
+            AnyKeyPrompt();
         }
 
-        public void CreateSession()
-        {
-            AnsiConsole.Clear();
-
-            var header = new Panel(
-                    Align.Center(
-                        new Markup("[blue]CREATING SESSION[/]"),
-                        VerticalAlignment.Middle
-                    )
-                ).Border(BoxBorder.Heavy).BorderStyle(Color.Blue);
-
-            AnsiConsole.Write(header);
-            AnsiConsole.WriteLine();
-
-
-            string StartTime = GetUserInput("Start Time (Format: dd-MM-yyyy HH-mm-ss)", "Please enter start date and time: ");
-
-            
-        }
-
-        // private CodingSession GetCodingSession()
+        // public void CreateSession()
         // {
-        //     CodingSession cs = new();
+        //     AnsiConsole.Clear();
 
-        //     var 
+        //     var header = new Panel(
+        //             Align.Center(
+        //                 new Markup("[blue]CREATING SESSION[/]"),
+        //                 VerticalAlignment.Middle
+        //             )
+        //         ).Border(BoxBorder.Heavy).BorderStyle(Color.Blue);
+
+        //     AnsiConsole.Write(header);
+        //     AnsiConsole.WriteLine();
+
+
+        //     string StartTime = GetUserInput("Start Time (Format: dd-MM-yyyy HH-mm-ss)", "Please enter start date and time: ");
+
+
         // }
+
+        // // private CodingSession GetCodingSession()
+        // // {
+        // //     CodingSession cs = new();
+
+        // //     var 
+        // // }
 
 
         // Templates
         private string GetUserInput(string header, string prompt)
         {
-            var inputRule = new Rule(header).Border(BoxBorder.Rounded).LeftJustified();
+            var inputRule = new Spectre.Console.Rule(header).Border(BoxBorder.Rounded).LeftJustified();
             AnsiConsole.Write(inputRule);
             AnsiConsole.WriteLine();
             string input = AnsiConsole.Ask<string>($"{prompt}: ");
@@ -95,10 +82,10 @@ namespace Code_Tracker
         }
         private void AnyKeyPrompt()
         {
-            var rule = new Rule().Border(BoxBorder.Double);
+            var rule = new Spectre.Console.Rule().Border(BoxBorder.Double);
             AnsiConsole.Write(rule);
             AnsiConsole.Write("Press any key to continue.");
-            AnsiConsole.Record();
+            Console.ReadKey();
             AnsiConsole.Clear();
         }
     }

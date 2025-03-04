@@ -11,9 +11,8 @@ namespace Code_Tracker
         // Main Menu
         public void ShowMainMenu()
         {
-            AnsiConsole.Clear();
-
             while (!closeApp){
+                AnsiConsole.Clear();
 
                 var rule = new Rule("Code Tracker").Border(BoxBorder.Double);
 
@@ -29,7 +28,7 @@ namespace Code_Tracker
                 switch (selectedOption)
                 {
                     case "Add Session":
-                        // controller.CreateSession();
+                        controller.CreateSession();
                         break;
                     case "Delete Session":
                         break;

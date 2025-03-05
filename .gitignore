@@ -3,4 +3,4 @@ bin/
 obj/
 
 #ignore files
-CodingSession.db
+CodingSessions.db

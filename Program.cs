@@ -3,7 +3,6 @@ using Code_Tracker;
 using System.Data.SQLite;
 using Dapper;
 using System.Data;
-using Spectre.Console;
 
 // Geting connection string from App.config
 string _connectionString = ConfigurationManager.AppSettings.Get("ConnectionString");

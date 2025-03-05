@@ -11,32 +11,28 @@ namespace Code_Tracker
     public class CodingSessionController
     {
         // Used as a state for coding sessions when creating new ones
-        Dictionary<string, string> sessionState = new Dictionary<string, string> {{ "startTime", "" }, { "endTime", "" }};
+        Dictionary<string, string> sessionState = new Dictionary<string, string> { { "startTime", "" }, { "endTime", "" } };
         readonly string _connectionString = ConfigurationManager.AppSettings.Get("ConnectionString");
-        public void GetAllSessions()
+
+        public void ShowSessions()
         {
             AnsiConsole.Clear();
 
-            using (IDbConnection connection = new SQLiteConnection(_connectionString))
+            var sessionData = GetAllSessions();
+
+            if (sessionData.Count == 0)
             {
-                string query = "SELECT * FROM CodingSessions";
-
-                var sessionData = connection.Query<CodingSession>(query).ToList();
-
-                if (sessionData.Count() == 0)
+                Templates.GeneralNotice("No sessions are found...");
+            }
+            else
+            {
+                foreach (var sessions in sessionData)
                 {
-                    AnsiConsole.WriteLine("No sessions are found...");
-                }
-                else
-                {
-                    foreach (var sessions in sessionData)
-                    {
-                        Console.WriteLine($"{sessions.Id} - Start: {sessions.StartTime} - End: {sessions.EndTime} - Duration: {sessions.Duration} hours");
-                    }
+                    Console.WriteLine($"{sessions.Id} - Start: {sessions.StartTime} - End: {sessions.EndTime} - Duration: {sessions.Duration} hours");
                 }
             }
 
-            AnyKeyPrompt();
+            Templates.AnyKeyPrompt();
         }
 
         public void CreateSession()
@@ -62,7 +58,7 @@ namespace Code_Tracker
                 // Handling start time input
                 if (sessionState["startTime"] == "")
                 {
-                    string startTime = GetUserInput("Start Time (Format: dd-MM-yyyy HH:mm:ss)", "Please enter start date and time");
+                    string startTime = Templates.GetUserInput("Start Time (Format: dd-MM-yyyy HH:mm:ss)", "Please enter start date and time");
 
                     // Exit if input is "0"
                     // Otherwise check if input is valid
@@ -74,7 +70,8 @@ namespace Code_Tracker
                     else if (!DateTime.TryParseExact(startTime, "dd-MM-yyyy HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
                     {
                         sessionState["startTime"] = "";
-                        InvalidInputNotice();
+                        Templates.InvalidInputNotice();
+                        Templates.AnyKeyPrompt();
                         continue;
                     }
                     else
@@ -85,15 +82,17 @@ namespace Code_Tracker
                 }
                 else
                 {
+                    // Rewrite the first prompt and input if the second input is invalid
                     var inputRule = new Spectre.Console.Rule("Start Time (Format: dd-MM-yyyy HH:mm:ss)").Border(BoxBorder.Rounded).LeftJustified();
                     AnsiConsole.Write(inputRule);
                     AnsiConsole.WriteLine();
                     AnsiConsole.WriteLine("Please enter start date and time: " + sessionState["startTime"] + "\n");
                 }
 
+                // Handling end time input
                 if (sessionState["endTime"] == "")
                 {
-                    string endTime = GetUserInput("End Time (Format: dd-MM-yyyy HH:mm:ss)", "Please enter end date and time");
+                    string endTime = Templates.GetUserInput("End Time (Format: dd-MM-yyyy HH:mm:ss)", "Please enter end date and time");
 
                     // Exit if input is "0"
                     // Otherwise check if input is valid
@@ -105,7 +104,8 @@ namespace Code_Tracker
                     else if (!DateTime.TryParseExact(endTime, "dd-MM-yyyy HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
                     {
                         sessionState["endTime"] = "";
-                        InvalidInputNotice();
+                        Templates.InvalidInputNotice();
+                        Templates.AnyKeyPrompt();
                         continue;
                     }
                     else
@@ -116,10 +116,12 @@ namespace Code_Tracker
                 }
             }
 
-            var duration = CalculateDuration(sessionState["startTime"], sessionState["endTime"]);
-
-            using (IDbConnection connection = new SQLiteConnection(_connectionString))
+            if (isValidStartTime && isValidEndTime)
             {
+                var duration = CalculateDuration(sessionState["startTime"], sessionState["endTime"]);
+
+                using IDbConnection connection = new SQLiteConnection(_connectionString);
+
                 var sql = $"INSERT INTO CodingSessions (StartTime, EndTime, Duration) VALUES ('{sessionState["startTime"]}', '{sessionState["endTime"]}', '{duration}')";
 
                 connection.Execute(sql);
@@ -128,45 +130,43 @@ namespace Code_Tracker
             ResetState();
         }
 
+        public void DeleteSession()
+        {
+            bool confirmExit = false;
+
+            var sessionData = GetAllSessions();
+
+            while (!confirmExit)
+            {
+                if (sessionData.Count == 0)
+                {
+                    break;
+                }
 
 
-        private double CalculateDuration(string startTime, string endTime) {
+
+                using IDbConnection connection = new SQLiteConnection(_connectionString);
+
+            }
+        }
+
+        private List<CodingSession> GetAllSessions()
+        {
+            using IDbConnection connection = new SQLiteConnection(_connectionString);
+
+            string query = "SELECT * FROM CodingSessions";
+
+            return [.. connection.Query<CodingSession>(query)];
+        }
+
+        private double CalculateDuration(string startTime, string endTime)
+        {
             DateTime startDateTime = DateTime.ParseExact(startTime, "dd-MM-yyyy HH:mm:ss", CultureInfo.InvariantCulture);
             DateTime endDateTime = DateTime.ParseExact(endTime, "dd-MM-yyyy HH:mm:ss", CultureInfo.InvariantCulture);
 
             return (endDateTime - startDateTime).TotalHours;
         }
 
-        // Templates
-        private string GetUserInput(string header, string prompt)
-        {
-            var inputRule = new Spectre.Console.Rule(header).Border(BoxBorder.Rounded).LeftJustified();
-            AnsiConsole.Write(inputRule);
-            AnsiConsole.WriteLine();
-            string input = AnsiConsole.Ask<string>($"{prompt}: ");
-            AnsiConsole.WriteLine();
-
-            return input;
-        }
-        private void AnyKeyPrompt()
-        {
-            var rule = new Spectre.Console.Rule().Border(BoxBorder.Double);
-            AnsiConsole.Write(rule);
-            AnsiConsole.Write("Press any key to continue.");
-            Console.ReadKey();
-        }
-
-        private void InvalidInputNotice()
-        {
-            AnsiConsole.Write(new Panel(
-                Align.Center(
-                    new Markup("[red]Invalid date time format.\nPlease press any key to try again.[/]"),
-                    VerticalAlignment.Middle
-                    )
-                ).Border(BoxBorder.Ascii).BorderStyle(Color.Red)
-            );
-            Console.ReadKey();
-        }
         private void ResetState()
         {
             sessionState["startTime"] = "";

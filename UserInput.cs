@@ -5,7 +5,7 @@ namespace Code_Tracker
     public class UserInput
     {
         bool closeApp = false;
-        string[] Options = ["Add Session", "Delete Session", "Update Session", "Show History", "Exit"];
+        string[] Options = ["Add Session", "Delete Session", "Update Session", "Show Sessions", "Exit"];
         CodingSessionController controller = new();
         
         // Main Menu
@@ -31,11 +31,12 @@ namespace Code_Tracker
                         controller.CreateSession();
                         break;
                     case "Delete Session":
+                        controller.DeleteSession();
                         break;
                     case "Update Session":
                         break;
-                    case "Show History":
-                        controller.GetAllSessions();
+                    case "Show Sessions":
+                        controller.ShowSessions();
                         break;
                     case "Exit":
                         AnsiConsole.Clear();

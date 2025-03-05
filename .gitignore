@@ -1,0 +1,6 @@
+#ignore folders
+bin/
+obj/
+
+#ignore files
+CodingSessions.db

@@ -17,27 +17,42 @@ namespace Code_Tracker
 
             using IDbConnection connection = new SQLiteConnection(_connectionString);
 
-            var sql = $"INSERT INTO CodingSessions (StartTime, EndTime, Duration) VALUES ('{startTime}', '{endTime}', '{duration}')";
+            var query = $"INSERT INTO CodingSessions (StartTime, EndTime, Duration) VALUES ('{startTime}', '{endTime}', '{duration}')";
 
-            connection.Execute(sql);
+            connection.Execute(query);
         }
 
         public void DeleteSession(int id)
         {
             using IDbConnection connection = new SQLiteConnection(_connectionString);
 
-            var sql = $"DELETE FROM CodingSessions WHERE id='{id}";
+            var query = $"DELETE FROM CodingSessions WHERE id='{id}";
 
-            connection.Execute(sql);
+            connection.Execute(query);
         }
 
-        public List<CodingSession> GetAllSessions()
+        public List<CodingSession> GetSessions()
         {
             using IDbConnection connection = new SQLiteConnection(_connectionString);
 
             string query = "SELECT * FROM CodingSessions";
 
             return [.. connection.Query<CodingSession>(query)];
+        }
+
+        public CodingSession UpdateSession(int id, string newStartTime, string newEndTime)
+        {
+            var duration = CalculateDuration(newStartTime, newEndTime);
+
+            CodingSession session = new(id, newStartTime, newEndTime, duration);
+
+            using IDbConnection connection = new SQLiteConnection(_connectionString);
+
+            string query = $"UPDATE CodingSessions SET StartTime='{session.StartTime}', EndTime='{session.EndTime}', Duration='{session.Duration}' WHERE Id='{session.Id}";
+
+            connection.Execute(query);
+
+            return session;
         }
 
         private double CalculateDuration(string startTime, string endTime)

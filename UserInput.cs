@@ -1,3 +1,4 @@
+using System.Globalization;
 using Spectre.Console;
 
 namespace Code_Tracker
@@ -6,18 +7,22 @@ namespace Code_Tracker
     {
         bool closeApp = false;
         string[] Options = ["Add Session", "Delete Session", "Update Session", "Show Sessions", "Exit"];
-        CodingSessionController controller = new();
         
+         // Used as a state for coding sessions when creating new ones
+        Dictionary<string, string> sessionState = new Dictionary<string, string> { { "startTime", "" }, { "endTime", "" } };
+        CodingSessionController controller = new();
+
         // Main Menu
         public void ShowMainMenu()
         {
-            while (!closeApp){
+            while (!closeApp)
+            {
                 AnsiConsole.Clear();
 
                 var rule = new Rule("Code Tracker").Border(BoxBorder.Double);
 
                 AnsiConsole.Write(rule);
-                
+
                 var selectedOption = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .Title("Please choose the options below:")
@@ -28,7 +33,7 @@ namespace Code_Tracker
                 switch (selectedOption)
                 {
                     case "Add Session":
-                        controller.CreateSession();
+                        AddSession();
                         break;
                     case "Delete Session":
                         controller.DeleteSession();
@@ -36,7 +41,7 @@ namespace Code_Tracker
                     case "Update Session":
                         break;
                     case "Show Sessions":
-                        controller.ShowSessions();
+                        ShowSessions();
                         break;
                     case "Exit":
                         AnsiConsole.Clear();
@@ -49,12 +54,140 @@ namespace Code_Tracker
                         break;
                     default:
                         AnsiConsole.Clear();
-                            AnsiConsole.WriteLine("Invalid input");
-                            AnsiConsole.Record();
-                            break;
-                    }
-                };
+                        AnsiConsole.WriteLine("Invalid input");
+                        AnsiConsole.Record();
+                        break;
+                }
             }
-        
+            ;
+        }
+
+        private void ShowSessions()
+        {
+            AnsiConsole.Clear();
+
+            var sessionData = controller.GetAllSessions();
+
+            if (sessionData.Count == 0)
+            {
+                Templates.GeneralNotice("No sessions are found...");
+            }
+            else
+            {
+                foreach (var sessions in sessionData)
+                {
+                    Console.WriteLine($"{sessions.Id} - Start: {sessions.StartTime} - End: {sessions.EndTime} - Duration: {sessions.Duration} hours");
+                }
+            }
+
+            Templates.AnyKeyPrompt();
+        }
+
+        private void AddSession()
+        {
+            bool isValidStartTime = false;
+            bool isValidEndTime = false;
+
+            // Handles user input
+            while (!isValidStartTime | !isValidEndTime)
+            {
+                AnsiConsole.Clear();
+
+                var header = new Panel(
+                    Align.Center(
+                        new Markup("[blue]CREATING SESSION[/]"),
+                        VerticalAlignment.Middle
+                        )
+                    ).Border(BoxBorder.Heavy).BorderStyle(Color.Blue);
+
+                AnsiConsole.Write(header);
+                AnsiConsole.WriteLine();
+
+                // Handling start time input
+                if (sessionState["startTime"] == "")
+                {
+                    string startTime = Templates.GetUserInput("Start Time (Format: dd-MM-yyyy HH:mm:ss)", "Please enter start date and time");
+
+                    // Exit if input is "0"
+                    // Otherwise check if input is valid
+                    if (startTime == "0")
+                    {
+                        ResetState();
+                        break;
+                    }
+                    else if (!DateTime.TryParseExact(startTime, "dd-MM-yyyy HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
+                    {
+                        sessionState["startTime"] = "";
+                        Templates.InvalidInputNotice();
+                        Templates.AnyKeyPrompt();
+                        continue;
+                    }
+                    else
+                    {
+                        isValidStartTime = true;
+                        sessionState["startTime"] = startTime;
+                    }
+                }
+                else
+                {
+                    // Rewrite the first prompt and input if the second input is invalid
+                    var inputRule = new Spectre.Console.Rule("Start Time (Format: dd-MM-yyyy HH:mm:ss)").Border(BoxBorder.Rounded).LeftJustified();
+                    AnsiConsole.Write(inputRule);
+                    AnsiConsole.WriteLine();
+                    AnsiConsole.WriteLine("Please enter start date and time: " + sessionState["startTime"] + "\n");
+                }
+
+                // Handling end time input
+                if (sessionState["endTime"] == "")
+                {
+                    string endTime = Templates.GetUserInput("End Time (Format: dd-MM-yyyy HH:mm:ss)", "Please enter end date and time");
+
+                    // Exit if input is "0"
+                    // Otherwise check if input is valid
+                    if (endTime == "0")
+                    {
+                        ResetState();
+                        break;
+                    }
+                    else if (!DateTime.TryParseExact(endTime, "dd-MM-yyyy HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
+                    {
+                        sessionState["endTime"] = "";
+                        Templates.InvalidInputNotice();
+                        Templates.AnyKeyPrompt();
+                        continue;
+                    }
+                    else
+                    {
+                        isValidEndTime = true;
+                        sessionState["endTime"] = endTime;
+                    }
+                }
+            }
+
+            controller.CreateSession(sessionState["startTime"], sessionState["endTime"]);
+
+            ResetState();
+        }
+
+        private void RemoveSession()
+        {
+            bool confirmExit = false;
+
+            var sessionData = controller.GetAllSessions();
+
+            while (!confirmExit)
+            {
+                if (sessionData.Count == 0)
+                {
+                    break;
+                }
+            }
+        }
+
+        private void ResetState()
+        {
+            sessionState["startTime"] = "";
+            sessionState["endTime"] = "";
+        }
     }
 }

@@ -88,16 +88,6 @@ namespace Code_Tracker
         {
             AnsiConsole.Clear();
 
-            var panel = new Panel(
-                Align.Center(
-                    new Markup($"[blue]CREATING SESSION[/]"),
-                    VerticalAlignment.Middle
-                    )
-                ).Border(BoxBorder.Heavy).BorderStyle(Color.Blue);
-
-            AnsiConsole.Write(panel);
-            AnsiConsole.WriteLine();
-
             DateTimeInputHandler();
 
             controller.CreateSession(sessionState["startTime"], sessionState["endTime"]);
@@ -117,6 +107,21 @@ namespace Code_Tracker
                 {
                     break;
                 }
+
+                var fruits = AnsiConsole.Prompt(
+                    new MultiSelectionPrompt<string>()
+                        .Title("What are your [green]favorite fruits[/]?")
+                        .NotRequired() // Not required to have a favorite fruit
+                        .PageSize(10)
+                        .MoreChoicesText("[grey](Move up and down to reveal more fruits)[/]")
+                        .InstructionsText(
+                            "[grey](Press [blue]<space>[/] to toggle a fruit, " +
+                            "[green]<enter>[/] to accept)[/]")
+                        .AddChoices(new[] {
+                            "Apple\nApple ----------------\n", "Apricot", "Avocado",
+                            "Banana", "Blackcurrant", "Blueberry",
+                            "Cherry", "Cloudberry", "Coconut",
+                        }));
             }
         }
 
@@ -128,6 +133,18 @@ namespace Code_Tracker
             // Handles user input
             while (!isValidStartTime | !isValidEndTime)
             {
+                AnsiConsole.Clear();
+
+                var panel = new Panel(
+                Align.Center(
+                    new Markup($"[blue]CREATING SESSION[/]"),
+                    VerticalAlignment.Middle
+                    )
+                ).Border(BoxBorder.Heavy).BorderStyle(Color.Blue);
+
+                AnsiConsole.Write(panel);
+                AnsiConsole.WriteLine();
+
                 // Handling start time input
                 if (sessionState["startTime"] == "")
                 {

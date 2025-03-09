@@ -43,7 +43,7 @@ namespace Code_Tracker
             return data;
         }
 
-        public void UpdateSession(int id, string newStartTime, string newEndTime)
+        public void UpdateSession(string id, string newStartTime, string newEndTime)
         {
             var newDuration = CalculateDuration(newStartTime, newEndTime);
 

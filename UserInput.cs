@@ -31,6 +31,8 @@ namespace Code_Tracker
                         .MoreChoicesText("[grey](Move up and down to reveal more options.)[/]")
                         .AddChoices(Options));
 
+                AnsiConsole.Clear();
+
                 switch (selectedOption)
                 {
                     case "Add Session":
@@ -40,6 +42,7 @@ namespace Code_Tracker
                         RemoveSession();
                         break;
                     case "Update Session":
+                        EditSession();
                         break;
                     case "Show Sessions":
                         ShowSessions();
@@ -67,6 +70,11 @@ namespace Code_Tracker
         {
             AnsiConsole.Clear();
 
+            var rule = new Rule("Code Tracker").Border(BoxBorder.Double);
+
+            AnsiConsole.Write(rule);
+            AnsiConsole.WriteLine();
+
             var sessionData = controller.GetSessions();
 
             if (sessionData.Count == 0)
@@ -76,7 +84,7 @@ namespace Code_Tracker
             else
             {
                 var table = new Table();
-                
+
                 table.AddColumns(["ID", "Start", "End", "Duration (hours)"]).Centered().Title("Coding Sessions");
 
                 int colorIncrement = 0;
@@ -85,7 +93,7 @@ namespace Code_Tracker
                 foreach (var s in sessionData)
                 {
                     table.AddRow(new Markup($"[{colorList[colorIncrement]}]{s.Id}[/]"), new Markup($"[{colorList[colorIncrement]}]{s.StartTime}[/]"), new Markup($"[{colorList[colorIncrement]}]{s.EndTime}[/]"), new Markup($"[{colorList[colorIncrement]}]{s.Duration}[/]"));
-                    
+
                     // switch between colors in colorList base on colorIncrement
                     colorIncrement++;
                     if (colorIncrement == colorList.Count) colorIncrement = 0;
@@ -94,12 +102,17 @@ namespace Code_Tracker
                 AnsiConsole.Write(table);
             }
 
+            AnsiConsole.WriteLine();
+
             Templates.AnyKeyPrompt();
         }
 
         private void AddSession()
         {
-            AnsiConsole.Clear();
+            var rule = new Rule("Code Tracker").Border(BoxBorder.Double);
+
+            AnsiConsole.Write(rule);
+            AnsiConsole.WriteLine();
 
             DateTimeInputHandler();
 
@@ -123,6 +136,15 @@ namespace Code_Tracker
 
             while (!confirmExit)
             {
+                AnsiConsole.Clear();
+
+                var rule = new Rule("Code Tracker").Border(BoxBorder.Double);
+
+                AnsiConsole.Write(rule);
+                AnsiConsole.WriteLine();
+
+                List<string> formattedSessionsList = [];
+
                 if (sessionData.Count == 0)
                 {
                     Templates.GeneralNotice("[blue]No sessions are found...[/]", BoxBorder.Rounded, Color.Blue);
@@ -130,19 +152,17 @@ namespace Code_Tracker
                     break;
                 }
 
-                var formattedSessionsList = new List<string>();
-
                 foreach (var s in sessionData)
                 {
-                    formattedSessionsList.Add($"ID: {s.Id}\tTimeframe: from {s.StartTime} to {s.EndTime}\tDuration: {s.Duration} hours");
+                    formattedSessionsList.Add($"ID: {s.Id}\t\tTimeframe: from {s.StartTime} to {s.EndTime}\t\tDuration: {s.Duration} hours");
                 }
 
                 var selectedSessions = AnsiConsole.Prompt(
                     new MultiSelectionPrompt<string>()
-                        .Title("Please choose coding session(s) you want to remove.")
+                        .Title("Please choose coding session(s) you want to remove. Choose none to cancel.")
                         .NotRequired() // Not required to have a favorite fruit
                         .PageSize(10)
-                        .MoreChoicesText("[grey](Move up and down to reveal more sessions.\nChoose none to cancel.)[/]")
+                        .MoreChoicesText("[grey](Move up and down to reveal more sessions.)[/]")
                         .InstructionsText(
                             "[grey](Press [blue]<space>[/] to toggle a coding session, " +
                             "[green]<enter>[/] to continue)[/]")
@@ -153,6 +173,7 @@ namespace Code_Tracker
 
                 if (selectedSessions.Count == 0)
                 {
+                    confirmExit = true;
                     break;
                 }
                 else
@@ -166,9 +187,63 @@ namespace Code_Tracker
                 Templates.GeneralNotice("[green]Session(s) removed successfully[/]", BoxBorder.Rounded, Color.Green);
 
                 Templates.AnyKeyPrompt();
-
-                confirmExit = true;
             }
+        }
+
+        private void EditSession()
+        {
+            bool confirmExit = false;
+
+            var sessionData = controller.GetSessions();
+
+            while (!confirmExit)
+            {
+                AnsiConsole.Clear();
+
+                var rule = new Rule("Code Tracker").Border(BoxBorder.Double);
+
+                AnsiConsole.Write(rule);
+                AnsiConsole.WriteLine();
+
+                List<string> formattedSessionsList = [];
+
+                foreach (var s in sessionData)
+                {
+                    formattedSessionsList.Add($"ID: {s.Id}\tTimeframe: from {s.StartTime} to {s.EndTime}\tDuration: {s.Duration} hours");
+                }
+
+                // Add the cancel option at the first index to the options list
+                formattedSessionsList.Insert(0, "Cancel");
+
+                var selectedSession = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .Title("Please choose a session to edit (Enter 0 to cancel):")
+                        .PageSize(10)
+                        .MoreChoicesText("[grey](Move up and down to reveal more options.)[/]")
+                        .AddChoices(formattedSessionsList)
+                );
+
+                if (selectedSession == "Cancel")
+                {
+                    confirmExit = true;
+                    break;
+                }
+
+                var sessionId = selectedSession.Substring(4, 1);
+
+                DateTimeInputHandler();
+
+                if (sessionState["startTime"] != "" || sessionState["endTime"] != "")
+                {
+                    controller.UpdateSession(sessionId, sessionState["startTime"], sessionState["endTime"]);
+
+                    AnsiConsole.Clear();
+                    Templates.GeneralNotice("[green]Session updated successfully[/]", BoxBorder.Rounded, Color.Green);
+                    Templates.AnyKeyPrompt();
+                }
+            }
+
+            ResetState();
         }
 
         private void DateTimeInputHandler()
@@ -180,6 +255,11 @@ namespace Code_Tracker
             while (!isValidStartTime | !isValidEndTime)
             {
                 AnsiConsole.Clear();
+
+                var rule = new Rule("Code Tracker").Border(BoxBorder.Double);
+
+                AnsiConsole.Write(rule);
+                AnsiConsole.WriteLine();
 
                 var panel = new Panel(
                 Align.Center(

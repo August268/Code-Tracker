@@ -86,7 +86,7 @@ namespace Code_Tracker
                 {
                     table.AddRow(new Markup($"[{colorList[colorIncrement]}]{s.Id}[/]"), new Markup($"[{colorList[colorIncrement]}]{s.StartTime}[/]"), new Markup($"[{colorList[colorIncrement]}]{s.EndTime}[/]"), new Markup($"[{colorList[colorIncrement]}]{s.Duration}[/]"));
                     
-                    // Change color base on colorIncrement
+                    // switch between colors in colorList base on colorIncrement
                     colorIncrement++;
                     if (colorIncrement == colorList.Count) colorIncrement = 0;
                 }

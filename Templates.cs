@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Spectre.Console;
 
 namespace Code_Tracker
@@ -26,14 +22,14 @@ namespace Code_Tracker
             Console.ReadKey();
         }
 
-        public static void GeneralNotice(string notice)
+        public static void GeneralNotice(string notice, BoxBorder borderStyle, Style color)
         {
             AnsiConsole.Write(new Panel(
                 Align.Center(
-                    new Markup($"[blue]{notice}[/]"),
+                    new Markup($"{notice}"),
                     VerticalAlignment.Middle
                     )
-                ).Border(BoxBorder.Rounded).BorderStyle(Color.Blue)
+                ).Border(borderStyle).BorderStyle(color)
             );
         }
 

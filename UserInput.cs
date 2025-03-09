@@ -71,14 +71,27 @@ namespace Code_Tracker
 
             if (sessionData.Count == 0)
             {
-                Templates.GeneralNotice("No sessions are found...");
+                Templates.GeneralNotice("[blue]No sessions are found...[/]", BoxBorder.Rounded, Color.Blue);
             }
             else
             {
-                foreach (var sessions in sessionData)
+                var table = new Table();
+                
+                table.AddColumns(["ID", "Start", "End", "Duration (hours)"]).Centered().Title("Coding Sessions");
+
+                int colorIncrement = 0;
+                List<string> colorList = ["blue", "yellow"];
+
+                foreach (var s in sessionData)
                 {
-                    Console.WriteLine($"{sessions.Id} - Start: {sessions.StartTime} - End: {sessions.EndTime} - Duration: {sessions.Duration} hours");
+                    table.AddRow(new Markup($"[{colorList[colorIncrement]}]{s.Id}[/]"), new Markup($"[{colorList[colorIncrement]}]{s.StartTime}[/]"), new Markup($"[{colorList[colorIncrement]}]{s.EndTime}[/]"), new Markup($"[{colorList[colorIncrement]}]{s.Duration}[/]"));
+                    
+                    // switch between colors in colorList base on colorIncrement
+                    colorIncrement++;
+                    if (colorIncrement == colorList.Count) colorIncrement = 0;
                 }
+
+                AnsiConsole.Write(table);
             }
 
             Templates.AnyKeyPrompt();
@@ -88,19 +101,16 @@ namespace Code_Tracker
         {
             AnsiConsole.Clear();
 
-            var panel = new Panel(
-                Align.Center(
-                    new Markup($"[blue]CREATING SESSION[/]"),
-                    VerticalAlignment.Middle
-                    )
-                ).Border(BoxBorder.Heavy).BorderStyle(Color.Blue);
-
-            AnsiConsole.Write(panel);
-            AnsiConsole.WriteLine();
-
             DateTimeInputHandler();
 
-            controller.CreateSession(sessionState["startTime"], sessionState["endTime"]);
+            if (sessionState["startTime"] != "" || sessionState["endTime"] != "")
+            {
+                controller.CreateSession(sessionState["startTime"], sessionState["endTime"]);
+
+                AnsiConsole.Clear();
+                Templates.GeneralNotice("[green]Session added successfully[/]", BoxBorder.Rounded, Color.Green);
+                Templates.AnyKeyPrompt();
+            }
 
             ResetState();
         }
@@ -115,8 +125,49 @@ namespace Code_Tracker
             {
                 if (sessionData.Count == 0)
                 {
+                    Templates.GeneralNotice("[blue]No sessions are found...[/]", BoxBorder.Rounded, Color.Blue);
+                    Templates.AnyKeyPrompt();
                     break;
                 }
+
+                var formattedSessionsList = new List<string>();
+
+                foreach (var s in sessionData)
+                {
+                    formattedSessionsList.Add($"ID: {s.Id}\tTimeframe: from {s.StartTime} to {s.EndTime}\tDuration: {s.Duration} hours");
+                }
+
+                var selectedSessions = AnsiConsole.Prompt(
+                    new MultiSelectionPrompt<string>()
+                        .Title("Please choose coding session(s) you want to remove.")
+                        .NotRequired() // Not required to have a favorite fruit
+                        .PageSize(10)
+                        .MoreChoicesText("[grey](Move up and down to reveal more sessions.\nChoose none to cancel.)[/]")
+                        .InstructionsText(
+                            "[grey](Press [blue]<space>[/] to toggle a coding session, " +
+                            "[green]<enter>[/] to continue)[/]")
+                        .AddChoices(
+                            formattedSessionsList
+                        )
+                );
+
+                if (selectedSessions.Count == 0)
+                {
+                    break;
+                }
+                else
+                {
+                    foreach (var s in selectedSessions)
+                    {
+                        controller.DeleteSession(s.Substring(4, 1));
+                    }
+                }
+
+                Templates.GeneralNotice("[green]Session(s) removed successfully[/]", BoxBorder.Rounded, Color.Green);
+
+                Templates.AnyKeyPrompt();
+
+                confirmExit = true;
             }
         }
 
@@ -128,10 +179,27 @@ namespace Code_Tracker
             // Handles user input
             while (!isValidStartTime | !isValidEndTime)
             {
+                AnsiConsole.Clear();
+
+                var panel = new Panel(
+                Align.Center(
+                    new Markup($"[blue]CREATING SESSION[/]"),
+                    VerticalAlignment.Middle
+                    )
+                ).Border(BoxBorder.Heavy).BorderStyle(Color.Blue);
+
+                AnsiConsole.Write(panel);
+                AnsiConsole.WriteLine();
+
+                // var rule = new Rule("Enter 0 to cancel.").Border(BoxBorder.Double).LeftJustified();
+
+                // AnsiConsole.Write(rule);
+                // AnsiConsole.WriteLine();
+
                 // Handling start time input
                 if (sessionState["startTime"] == "")
                 {
-                    string startTime = Templates.GetUserInput("Start Time (Format: dd-MM-yyyy HH:mm:ss)", "Please enter start date and time");
+                    string startTime = Templates.GetUserInput("Start Time (Format: dd-MM-yyyy HH:mm:ss, Enter 0 to cancel.)", "Please enter start date and time");
 
                     // Exit if input is "0"
                     // Otherwise check if input is valid
@@ -165,7 +233,7 @@ namespace Code_Tracker
                 // Handling end time input
                 if (sessionState["endTime"] == "")
                 {
-                    string endTime = Templates.GetUserInput("End Time (Format: dd-MM-yyyy HH:mm:ss)", "Please enter end date and time");
+                    string endTime = Templates.GetUserInput("End Time (Format: dd-MM-yyyy HH:mm:ss, Enter 0 to cancel.)", "Please enter end date and time");
 
                     // Exit if input is "0"
                     // Otherwise check if input is valid

@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Code_Tracker
 {
@@ -10,7 +6,7 @@ namespace Code_Tracker
     {
         public bool ValidateDateTime(string dateTime)
         {
-            if (!DateTime.TryParseExact(dateTime, "dd-MM-yyyy", new CultureInfo("en-US"), DateTimeStyles.None, out _))
+            if (!DateTime.TryParseExact(dateTime, "dd-MM-yyyy HH:mm:ss", new CultureInfo("en-US"), DateTimeStyles.None, out _))
             {
                 return false;
             }

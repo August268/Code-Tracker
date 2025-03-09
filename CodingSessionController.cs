@@ -23,11 +23,11 @@ namespace Code_Tracker
             connection.Execute(query);
         }
 
-        public void DeleteSession(int id)
+        public void DeleteSession(string id)
         {
             using IDbConnection connection = new SQLiteConnection(_connectionString);
 
-            var query = $"DELETE FROM CodingSessions WHERE id='{id}";
+            var query = $"DELETE FROM CodingSessions WHERE Id={id}";
 
             connection.Execute(query);
         }
@@ -49,7 +49,7 @@ namespace Code_Tracker
 
             using IDbConnection connection = new SQLiteConnection(_connectionString);
 
-            string query = $"UPDATE CodingSessions SET StartTime='{newStartTime}', EndTime='{newEndTime}', Duration='{newDuration}' WHERE Id='{id}";
+            string query = $"UPDATE CodingSessions SET StartTime='{newStartTime}', EndTime='{newEndTime}', Duration='{newDuration}' WHERE Id='{id}'";
 
             connection.Execute(query);
         }

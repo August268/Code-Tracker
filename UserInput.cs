@@ -71,7 +71,7 @@ namespace Code_Tracker
 
             if (sessionData.Count == 0)
             {
-                Templates.GeneralNotice("No sessions are found...");
+                Templates.GeneralNotice(new Markup("[blue]No sessions are found...[/]"), BoxBorder.Rounded, Color.Blue);
             }
             else
             {
@@ -90,7 +90,14 @@ namespace Code_Tracker
 
             DateTimeInputHandler();
 
-            controller.CreateSession(sessionState["startTime"], sessionState["endTime"]);
+            if (sessionState["startTime"] != "" || sessionState["endTime"] != "")
+            {
+                controller.CreateSession(sessionState["startTime"], sessionState["endTime"]);
+
+                AnsiConsole.Clear();
+                Templates.GeneralNotice(new Markup("[green]Session added successfully[/]"), BoxBorder.Rounded, Color.Green);
+                Templates.AnyKeyPrompt();
+            }
 
             ResetState();
         }
@@ -105,23 +112,49 @@ namespace Code_Tracker
             {
                 if (sessionData.Count == 0)
                 {
+                    Templates.GeneralNotice(new Markup("[blue]No sessions are found...[/]"), BoxBorder.Rounded, Color.Blue);
+                    Templates.AnyKeyPrompt();
                     break;
                 }
 
-                var fruits = AnsiConsole.Prompt(
+                var formattedSessionsList = new List<string>();
+
+                foreach (var s in sessionData)
+                {
+                    formattedSessionsList.Add($"ID: {s.Id}\tTimeframe: from {s.StartTime} to {s.EndTime}\tDuration: {s.Duration} hours");
+                }
+
+                var selectedSessions = AnsiConsole.Prompt(
                     new MultiSelectionPrompt<string>()
-                        .Title("What are your [green]favorite fruits[/]?")
+                        .Title("Please choose coding session(s) you want to remove.")
                         .NotRequired() // Not required to have a favorite fruit
                         .PageSize(10)
-                        .MoreChoicesText("[grey](Move up and down to reveal more fruits)[/]")
+                        .MoreChoicesText("[grey](Move up and down to reveal more sessions.\nChoose none to cancel.)[/]")
                         .InstructionsText(
-                            "[grey](Press [blue]<space>[/] to toggle a fruit, " +
-                            "[green]<enter>[/] to accept)[/]")
-                        .AddChoices(new[] {
-                            "Apple\nApple ----------------\n", "Apricot", "Avocado",
-                            "Banana", "Blackcurrant", "Blueberry",
-                            "Cherry", "Cloudberry", "Coconut",
-                        }));
+                            "[grey](Press [blue]<space>[/] to toggle a coding session, " +
+                            "[green]<enter>[/] to continue)[/]")
+                        .AddChoices(
+                            formattedSessionsList
+                        )
+                );
+
+                if (selectedSessions.Count == 0)
+                {
+                    break;
+                }
+                else
+                {
+                    foreach (var s in selectedSessions)
+                    {
+                        controller.DeleteSession(s.Substring(4, 1));
+                    }
+                }
+
+                Templates.GeneralNotice(new Markup("[green]Session(s) removed successfully[/]"), BoxBorder.Rounded, Color.Green);
+
+                Templates.AnyKeyPrompt();
+
+                confirmExit = true;
             }
         }
 
@@ -145,10 +178,15 @@ namespace Code_Tracker
                 AnsiConsole.Write(panel);
                 AnsiConsole.WriteLine();
 
+                // var rule = new Rule("Enter 0 to cancel.").Border(BoxBorder.Double).LeftJustified();
+
+                // AnsiConsole.Write(rule);
+                // AnsiConsole.WriteLine();
+
                 // Handling start time input
                 if (sessionState["startTime"] == "")
                 {
-                    string startTime = Templates.GetUserInput("Start Time (Format: dd-MM-yyyy HH:mm:ss)", "Please enter start date and time");
+                    string startTime = Templates.GetUserInput("Start Time (Format: dd-MM-yyyy HH:mm:ss, Enter 0 to cancel.)", "Please enter start date and time");
 
                     // Exit if input is "0"
                     // Otherwise check if input is valid
@@ -182,7 +220,7 @@ namespace Code_Tracker
                 // Handling end time input
                 if (sessionState["endTime"] == "")
                 {
-                    string endTime = Templates.GetUserInput("End Time (Format: dd-MM-yyyy HH:mm:ss)", "Please enter end date and time");
+                    string endTime = Templates.GetUserInput("End Time (Format: dd-MM-yyyy HH:mm:ss, Enter 0 to cancel.)", "Please enter end date and time");
 
                     // Exit if input is "0"
                     // Otherwise check if input is valid

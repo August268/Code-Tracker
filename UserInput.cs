@@ -71,14 +71,27 @@ namespace Code_Tracker
 
             if (sessionData.Count == 0)
             {
-                Templates.GeneralNotice(new Markup("[blue]No sessions are found...[/]"), BoxBorder.Rounded, Color.Blue);
+                Templates.GeneralNotice("[blue]No sessions are found...[/]", BoxBorder.Rounded, Color.Blue);
             }
             else
             {
-                foreach (var sessions in sessionData)
+                var table = new Table();
+                
+                table.AddColumns(["ID", "Start", "End", "Duration (hours)"]).Centered().Title("Coding Sessions");
+
+                int colorIncrement = 0;
+                List<string> colorList = ["blue", "yellow"];
+
+                foreach (var s in sessionData)
                 {
-                    Console.WriteLine($"{sessions.Id} - Start: {sessions.StartTime} - End: {sessions.EndTime} - Duration: {sessions.Duration} hours");
+                    table.AddRow(new Markup($"[{colorList[colorIncrement]}]{s.Id}[/]"), new Markup($"[{colorList[colorIncrement]}]{s.StartTime}[/]"), new Markup($"[{colorList[colorIncrement]}]{s.EndTime}[/]"), new Markup($"[{colorList[colorIncrement]}]{s.Duration}[/]"));
+                    
+                    // Change color base on colorIncrement
+                    colorIncrement++;
+                    if (colorIncrement == colorList.Count) colorIncrement = 0;
                 }
+
+                AnsiConsole.Write(table);
             }
 
             Templates.AnyKeyPrompt();
@@ -95,7 +108,7 @@ namespace Code_Tracker
                 controller.CreateSession(sessionState["startTime"], sessionState["endTime"]);
 
                 AnsiConsole.Clear();
-                Templates.GeneralNotice(new Markup("[green]Session added successfully[/]"), BoxBorder.Rounded, Color.Green);
+                Templates.GeneralNotice("[green]Session added successfully[/]", BoxBorder.Rounded, Color.Green);
                 Templates.AnyKeyPrompt();
             }
 
@@ -112,7 +125,7 @@ namespace Code_Tracker
             {
                 if (sessionData.Count == 0)
                 {
-                    Templates.GeneralNotice(new Markup("[blue]No sessions are found...[/]"), BoxBorder.Rounded, Color.Blue);
+                    Templates.GeneralNotice("[blue]No sessions are found...[/]", BoxBorder.Rounded, Color.Blue);
                     Templates.AnyKeyPrompt();
                     break;
                 }
@@ -150,7 +163,7 @@ namespace Code_Tracker
                     }
                 }
 
-                Templates.GeneralNotice(new Markup("[green]Session(s) removed successfully[/]"), BoxBorder.Rounded, Color.Green);
+                Templates.GeneralNotice("[green]Session(s) removed successfully[/]", BoxBorder.Rounded, Color.Green);
 
                 Templates.AnyKeyPrompt();
 

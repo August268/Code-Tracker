@@ -22,11 +22,11 @@ namespace Code_Tracker
             Console.ReadKey();
         }
 
-        public static void GeneralNotice(Markup notice, BoxBorder borderStyle, Style color)
+        public static void GeneralNotice(string notice, BoxBorder borderStyle, Style color)
         {
             AnsiConsole.Write(new Panel(
                 Align.Center(
-                    notice,
+                    new Markup($"{notice}"),
                     VerticalAlignment.Middle
                     )
                 ).Border(borderStyle).BorderStyle(color)
